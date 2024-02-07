@@ -12,8 +12,8 @@
 // ----- YOUR ANSWERS ------
 //This algorithm is a very famous one.
 
-export const ANSWER_E = 'O(1)'
-export const EXTRA_POINT1 = 'what algorythm is'
+export const ANSWER_E = 'O(log n)'
+export const EXTRA_POINT1 = 'Binary Search'
 
 // ------------------------
 
