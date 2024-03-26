@@ -19,13 +19,15 @@
  * Test 1 should print Hello!
  * 👇🤜👇👇👇👇👇👇👇👉👆👈🤛👉👇👊👇🤜👇👉👆👆👆👆👆👈🤛👉👆👆👊👆👆👆👆👆👆👆👊👊👆👆👆👊
  * 
- * Test 2 should printe Hello Wolrd\n
- * 👉👆👆👆👆👆👆👆👆🤜👇👈👆👆👆👆👆👆👆👆👆👉🤛👈👊👉👉👆👉👇🤜👆🤛👆👆👉👆👆👉👆👆👆🤜👉🤜👇👉👆👆👆👈👈👆👆👆👉🤛👈👈🤛👉👇👇👇👇👇👊👉👇👉👆👆👆👊👊👆👆👆👊👉👇👊👈👈👆🤜👉🤜👆👉👆🤛👉👉🤛👈👇👇👇👇👇👇👇👇👇👇👇👇👇👇👊👉👉👊👆👆👆👊👇👇👇👇👇👇👊👇👇👇👇👇👇👇👇👊👉👆👊👉👆👊
+ * Test 2 should print Hello Wolrd\n
+ * 👉👆👆👆👆👆👆👆👆🤜👇👈👆👆👆👆👆👆👆👆👆👉🤛👈👊👉👉👆👉👇🤜👆🤛👆👆👉👆👆👉👆👆👆🤜👉🤜👇👉👆👆👆👈👈👆👆👆👉🤛👈👈🤛👉👇👇👇👇👇👊👉👇👉👆👆👆👊👊👆👆👆👊👉👇👊 👈👈👆🤜👉🤜👆👉👆🤛👉👉🤛👈👇👇👇👇👇👇👇👇👇👇👇👇👇👇👊👉👉👊👆👆👆👊👇👇👇👇👇👇👊👇👇👇👇👇👇👇👇👊👉👆👊👉👆👊
  */
 
 export class Emoji {
-  private readonly TOP_VALUE = 255
-  private readonly BOT_VALUE = 0
+  private readonly TOP_VALUE: number = 255
+  private readonly BOT_VALUE:number = 0
+  private startOfNestingIndexesStack: number[] = [];
+  private skipNestsCounter: number = 0;
   private buffer: string = ""
 
   constructor(
@@ -42,9 +44,23 @@ export class Emoji {
   }
 
   public read(emojis: string) {
-    [...emojis].forEach(emoji => {
-      this.strategies[emoji]();
-    });
+    
+    [...emojis].forEach((emoji, emojiIndex)=>{
+      
+      if(emoji === "🤜" ){
+        this.evaluateNestingEmoji(emojiIndex);
+        return;
+      }
+
+      if(emoji === "🤛"){
+        this.evaluateJumpEmoji(emojiIndex, emojis);
+        return;
+      }
+
+      if(this.notSkippingEmojis()) {        
+        this.strategies[emoji]();
+      }
+    })
   }
 
   private moveMemoryToPreviousPointer() {
@@ -75,10 +91,59 @@ export class Emoji {
     this.memory[this.pointer]--;
   }
 
+  private evaluateNestingEmoji(emojiIndex: number){
+    if(this.skippingEmojis() || this.currentPointedValueIs0()){
+      this.skipNestsCounter++;
+    }
+
+    this.startOfNestingIndexesStack.push(emojiIndex)
+  }
+
+  private evaluateJumpEmoji(jumpEmojiIndex: number, emojis: string){
+    const emojiSequenceStartIndex = this.getEmojiSequenceStartIndex();
+   
+    if(this.notSkippingEmojis()){
+      const emojiSequenceInNesting = this.getEmojiSequence(emojiSequenceStartIndex, jumpEmojiIndex, emojis)
+      this.executeEmojiSequenceInNestingWhilePointedMemoryCellIs0(emojiSequenceInNesting);
+    }else {
+      this.skipNestsCounter--;
+    }
+  }
+
+  private getEmojiSequence(emojiSequenceStartIndex: number, emojiSequenceEndIndex: number, emojis: string) {
+    return [...emojis].slice(emojiSequenceStartIndex, emojiSequenceEndIndex).toString().replace(/,/g,"");
+  }
+
+  private getEmojiSequenceStartIndex() {
+    return this.startOfNestingIndexesStack.pop() + 1;
+  }
+
+  private executeEmojiSequenceInNestingWhilePointedMemoryCellIs0(emojiSequenceInNesting: string) {            
+    while (!this.currentPointedValueIs0()) {
+      this.read(emojiSequenceInNesting)
+    }
+  }
+
   private saveInBuffer() {
+    
     const value = this.memory[this.pointer]
+    
     let valueInChar = String.fromCharCode(value)
-    this.buffer += valueInChar
+    
+    
+    this.buffer += valueInChar;
+  }
+
+  private currentPointedValueIs0(): boolean{
+    return this.memory[this.pointer] === 0;
+  }
+
+  private skippingEmojis(): boolean{
+    return this.skipNestsCounter !== 0;
+  }
+
+  private notSkippingEmojis(): boolean{
+    return this.skipNestsCounter === 0
   }
 
   public print() {

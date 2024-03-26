@@ -11,7 +11,7 @@
 
 // ----- YOUR ANSWERS ------
 
-export const ANSWER_F = 'O(1)'
+export const ANSWER_F = 'O(n)'
 
 // ------------------------
 
