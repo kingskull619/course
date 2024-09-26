@@ -11,12 +11,57 @@
  * to change the state var... just be carefull...⚠️
  */
 
-type State = { /* put params if needed */ }
-const INITIAL_STATE: State = {}
+type State = { pinsPerRoll: number[] }
+const INITIAL_STATE: State = {
+  pinsPerRoll: []
+}
 
 export const createBowlingGame = (state: State = INITIAL_STATE) => Object.freeze({
-  //myFunction: () => callInnerModuleScopeFunction()
-  //myOhterFunction: (...) => myOtherFunction(...)
+  roll: (pins) => roll(state, pins),
+  getScore: () => getScore(state)
 })
 
-//const myOtherFunction = (...) => {...}
+export type Game = ReturnType<typeof createBowlingGame>
+
+const roll = (state: State, pins: number) => {
+  return createBowlingGame({pinsPerRoll: [...state.pinsPerRoll, pins]})
+}
+
+const getScore = ({pinsPerRoll}: State) => {
+  let score = 0
+  const MAX_FRAMES = 10
+  let roll = 0
+  for (let frame = 0; frame < MAX_FRAMES; frame++) {
+    if(isStrike(pinsPerRoll, roll)) {
+      score += scoreForStrike(pinsPerRoll, roll)
+      roll++
+    } else if(isSpare(pinsPerRoll, roll)){
+      score += scoreForSpare(pinsPerRoll, roll)
+      roll += 2
+    } else {
+      score += scoreForFrame(pinsPerRoll, roll)
+      roll += 2
+    }
+  }
+  return score
+}
+
+function scoreForFrame(pinsPerRoll: number[], roll: number) {
+  return pinsPerRoll[roll] + pinsPerRoll[roll + 1]
+}
+
+function isSpare(pinsPerRoll: number[], roll: number) {
+  return pinsPerRoll[roll] + pinsPerRoll[roll + 1] === 10
+}
+
+function scoreForSpare(pinsPerRoll: number[], roll: number) {
+  return 10 + pinsPerRoll[roll + 2]
+}
+
+function isStrike(pinsPerRoll: number[], roll: number) {
+  return pinsPerRoll[roll] === 10
+}
+
+function scoreForStrike(pinsPerRoll: number[], roll: number) {
+  return 10 + pinsPerRoll[roll + 1] + pinsPerRoll[roll + 2]
+}

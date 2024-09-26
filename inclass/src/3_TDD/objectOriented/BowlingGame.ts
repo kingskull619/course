@@ -1,4 +1,3 @@
-
 export class BowlingGame {
   private rolls: number[] = []
   private readonly FRAMES = 10
@@ -30,7 +29,6 @@ export class BowlingGame {
 
     return score
   }
-
 
   private scoreForStrike(firstTry: number) {
     return 10 + this.rolls[firstTry + 1] + this.rolls[firstTry + 2]
