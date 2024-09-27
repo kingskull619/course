@@ -11,7 +11,7 @@
 
 // ----- YOUR ANSWERS ------
 
-export const ANSWER_G = 'O(1)'
+export const ANSWER_G = 'O(log n)'
 
 // ------------------------
 
